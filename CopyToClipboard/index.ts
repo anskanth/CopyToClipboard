@@ -3,7 +3,8 @@ import copy from 'copy-to-clipboard';
 
 export class CopyToClipboard implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 
-	private _Content:string|null;
+	private _content:string | null;
+	private _customTooltip: string | null;
 
 	private _commandButton:HTMLAnchorElement;
 	private img:HTMLImageElement
@@ -37,7 +38,8 @@ export class CopyToClipboard implements ComponentFramework.StandardControl<IInpu
 	 */
 	public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container:HTMLDivElement): void
 	{
-		this._Content=context.parameters.content.raw;
+		this._content=context.parameters.Content.raw;
+		this._customTooltip=context.parameters.CustomTooltip.raw;
 		// Add control initialization code
 		
 		this._context = context;
@@ -48,11 +50,11 @@ export class CopyToClipboard implements ComponentFramework.StandardControl<IInpu
 		this.img.src=this.getImageSource();
 		this._commandButton=document.createElement("a");
 		this._commandButton.innerHTML=this.img.outerHTML;
-		this._commandButton.title="Copy to clipboard";
+		this._commandButton.title=this.getToolTip();	
 		this._commandButton.href="#";
 
 		this._commandButton.onclick=()=>{
-			this.CopyToClipboard(this._Content);
+			this.CopyToClipboard(this._content);
 
 		}
 
@@ -60,24 +62,44 @@ export class CopyToClipboard implements ComponentFramework.StandardControl<IInpu
 		container.append(this._container);
 	}
 	
+	private getToolTip():string
+	{
+		if(this._customTooltip != null && this._customTooltip !=="")
+		{
+			return this._customTooltip;
+		}
+
+		var message:string=this._content || "";
+
+		if(message.length==0)
+		{
+			return "";
+		}
+
+		if(message.length>10)
+		{
+			message=`${message.substr(0,5)}...${message.substr(message.length-5)}`;
+		}
+
+		return `Copy [[${message}]] to clipboard`;
+	}
 	private getImageSource(): string
 	{
-	return  "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAABmJLR0QA/wD/AP+gvaeTAAABGUlEQVRIibWUPQoCMRBGn2Ih2AoWrqUewN4TeABB8BxWdnaCB/GnEz2A11DwAharB1iLjRDXiZnsxoFhF5Jv3kz4EsgjAbbAA8gKeQOmRIgEuAuAYs6rgram0AHoCusjC7asAnofV+JYb/I52bos6F3At+cCTID2P0FXoENF02hAQyKYRgOCCKYpgqQuIYJptCCtaexc/QL5ioSAMmDhKlBlorNDP4sNsqMFjI3mVrPENY+wuM8H/djX+FFQEpUOCaSNILgE0hZwHZ2orwNP8++6iNFiT97d0QMLdd2XboD/sZRAvsdVbDABNkD6L1CIc7T3TdTVAwRlTNMz3zRAozaNDTkZzS4EpDGNlHegHwICv2nsTM0kfYAXoXXQ8XYfZLoAAAAASUVORK5CYII=";
+		return  "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAABmJLR0QA/wD/AP+gvaeTAAABGUlEQVRIibWUPQoCMRBGn2Ih2AoWrqUewN4TeABB8BxWdnaCB/GnEz2A11DwAharB1iLjRDXiZnsxoFhF5Jv3kz4EsgjAbbAA8gKeQOmRIgEuAuAYs6rgram0AHoCusjC7asAnofV+JYb/I52bos6F3At+cCTID2P0FXoENF02hAQyKYRgOCCKYpgqQuIYJptCCtaexc/QL5ioSAMmDhKlBlorNDP4sNsqMFjI3mVrPENY+wuM8H/djX+FFQEpUOCaSNILgE0hZwHZ2orwNP8++6iNFiT97d0QMLdd2XboD/sZRAvsdVbDABNkD6L1CIc7T3TdTVAwRlTNMz3zRAozaNDTkZzS4EpDGNlHegHwICv2nsTM0kfYAXoXXQ8XYfZLoAAAAASUVORK5CYII=";
 	}
 	
 	public CopyToClipboard(val:string|null)
 	{
-		if(this._Content !== null && this._Content !== "")
-			copy(this._Content);
-		//else
-			//alert("No data to copy");	
+		if(this._content !== null && this._content !== "")
+			copy(this._content);
+	
 	}
 	/**
    * Updates the values to the internal value variable we are storing and also updates the html label that displays the value
    * @param context : The "Input Properties" containing the parameters, component metadata and interface functions
    */
 	public refreshData(evt: Event): void {
-		this._Content=this._context.parameters.content.raw;
+		//this._Content=this._context.parameters.content.raw;
 		this._notifyOutputChanged();
 	}
 
@@ -88,7 +110,9 @@ export class CopyToClipboard implements ComponentFramework.StandardControl<IInpu
 	public updateView(context: ComponentFramework.Context<IInputs>): void
 	{
 		// Add code to update control view
-		this._Content=context.parameters.content.raw;
+		this._content=context.parameters.Content.raw;
+		this._customTooltip=context.parameters.CustomTooltip.raw;
+		this._commandButton.title=this.getToolTip();	
 	}
 
 	/**
